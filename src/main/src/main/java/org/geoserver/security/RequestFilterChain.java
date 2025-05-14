@@ -21,7 +21,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Justin Deoliveira, OpenGeo
  */
-public abstract class RequestFilterChain implements Serializable, Cloneable {
+public abstract class  RequestFilterChain implements Serializable, Cloneable {
 
     /** */
     private static final long serialVersionUID = 1L;

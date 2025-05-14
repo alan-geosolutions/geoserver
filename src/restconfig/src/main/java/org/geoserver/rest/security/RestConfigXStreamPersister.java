@@ -7,8 +7,11 @@ package org.geoserver.rest.security;
 import java.util.logging.Logger;
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.config.util.XStreamPersisterInitializer;
+import org.geoserver.rest.security.xml.AuthFilterChain;
 import org.geoserver.rest.security.xml.JaxbUser;
 import org.geotools.util.logging.Logging;
+
+import javax.servlet.FilterChain;
 
 /**
  * XStreamPersisterInitializer implementation for gs-rest-config
@@ -25,5 +28,6 @@ public class RestConfigXStreamPersister implements XStreamPersisterInitializer {
 
         persister.getXStream().allowTypesByWildcard(new String[] {"org.geoserver.rest.security.xml.*"});
         persister.getXStream().alias("user", JaxbUser.class);
+        persister.getXStream().alias("filterChain", AuthFilterChain.class);
     }
 }
