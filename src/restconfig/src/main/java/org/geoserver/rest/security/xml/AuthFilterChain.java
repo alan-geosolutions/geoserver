@@ -4,45 +4,35 @@
  */
 package org.geoserver.rest.security.xml;
 
-import com.fasterxml.jackson.annotation.JsonRootName;
+import static java.util.stream.Collectors.toSet;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 import org.geoserver.rest.security.AuthenticationFilterChainRestController.CannotMakeChain;
 import org.geoserver.security.HTTPMethod;
 import org.geoserver.security.RequestFilterChain;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import static java.util.stream.Collectors.toSet;
-
-@XmlRootElement(name = "filterChain")
-@JsonRootName(value = "authFilter")
+@XStreamAlias("filterChain")
 public class AuthFilterChain {
     private String name;
     private String className;
-    @XmlTransient
     private List<String> patterns;
-
-    @XmlTransient
     private List<String> filters;
     private boolean disabled;
     private boolean allowSessionCreation;
     private boolean requireSSL;
     private boolean matchHTTPMethod;
-    @XmlTransient
     private Set<String> httpMethods;
     private String roleFilterName;
 
     private int position;
 
-    public AuthFilterChain() {
-    }
+    public AuthFilterChain() {}
 
     public AuthFilterChain(RequestFilterChain requestFilterChain) {
         this.name = requestFilterChain.getName();
@@ -53,12 +43,14 @@ public class AuthFilterChain {
         this.allowSessionCreation = requestFilterChain.isAllowSessionCreation();
         this.requireSSL = requestFilterChain.isRequireSSL();
         this.matchHTTPMethod = requestFilterChain.isMatchHTTPMethod();
-        this.httpMethods = requestFilterChain.getHttpMethods().stream().map(HTTPMethod::name).collect(toSet());
+        this.httpMethods = requestFilterChain.getHttpMethods().stream()
+                .map(HTTPMethod::name)
+                .collect(toSet());
         this.roleFilterName = requestFilterChain.getRoleFilterName();
     }
 
     public RequestFilterChain toRequestFilterChain() {
-        var filterChain = createInstance(patterns);
+        RequestFilterChain filterChain = createInstance(patterns);
         filterChain.setName(name);
         filterChain.setPatterns(patterns);
         filterChain.setFilterNames(filters);
@@ -67,25 +59,26 @@ public class AuthFilterChain {
         filterChain.setRequireSSL(requireSSL);
         filterChain.setMatchHTTPMethod(matchHTTPMethod);
         if (httpMethods != null) {
-            filterChain.setHttpMethods(httpMethods.stream()
-                    .map(HTTPMethod::valueOf)
-                    .collect(toSet()));
+            filterChain.setHttpMethods(
+                    httpMethods.stream().map(HTTPMethod::valueOf).collect(toSet()));
         }
         filterChain.setRoleFilterName(this.roleFilterName);
         return filterChain;
-
     }
 
     private RequestFilterChain createInstance(List<String> patterns) {
         try {
-            var clazz = Class.forName(className);
-            var possibleConstructor = Arrays.stream(clazz.getDeclaredConstructors())
+            Class<?> clazz = Class.forName(className);
+            Optional<Constructor<?>> possibleConstructor = Arrays.stream(clazz.getDeclaredConstructors())
                     .filter(matchesStringArrayConstructor())
                     .findFirst();
             if (possibleConstructor.isPresent()) {
-                return (RequestFilterChain) possibleConstructor.get().newInstance(new Object[]{patterns.toArray(new String[0])});
+                return (RequestFilterChain)
+                        possibleConstructor.get().newInstance(new Object[] {patterns.toArray(new String[0])});
             }
-            throw new CannotMakeChain(className, new InstantiationException("Cannot find a constructor with a single String[] parameter"));
+            throw new CannotMakeChain(
+                    className,
+                    new InstantiationException("Cannot find a constructor with a single String[] parameter"));
         } catch (ReflectiveOperationException e) {
             throw new CannotMakeChain(className, e);
         }
@@ -116,9 +109,6 @@ public class AuthFilterChain {
         this.className = className;
     }
 
-
-    @XmlElementWrapper(name = "patterns")
-    @XmlElement(name = "pattern")
     public List<String> getPatterns() {
         return patterns;
     }
@@ -127,8 +117,6 @@ public class AuthFilterChain {
         this.patterns = patterns;
     }
 
-    @XmlElementWrapper(name = "filters")
-    @XmlElement(name = "filter")
     public List<String> getFilters() {
         return filters;
     }

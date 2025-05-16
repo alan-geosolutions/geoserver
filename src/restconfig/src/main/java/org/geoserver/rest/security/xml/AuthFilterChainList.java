@@ -1,16 +1,13 @@
 package org.geoserver.rest.security.xml;
 
-import org.geoserver.security.RequestFilterChain;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement(name = "filterChains")
+@XStreamAlias("filterChainList")
 public class AuthFilterChainList {
-    @XmlTransient
+    @XStreamImplicit
     List<AuthFilterChain> filterChains = new ArrayList<>();
 
     public AuthFilterChainList() {}
@@ -19,7 +16,6 @@ public class AuthFilterChainList {
         this.filterChains = filterChains;
     }
 
-    @XmlElement(name = "filterChain")
     public List<AuthFilterChain> getFilterChains() {
         return filterChains;
     }
